@@ -64,40 +64,81 @@ class Loan {
 
   // eslint-disable-next-line max-lines-per-function
   generateOffer() {
-    const CONTENT = `
+    const RESPONSE = `
     <!DOCTYPE html>
     <html lang="en">
       <head>
         <meta charset="utf-8">
         <title>Loan Calculator</title>
+        <style type="text/css">
+          ${this.generateStyle()}
+        </style>
       </head>
       <body>
-        <article>
-          <h1>Your personalized loan:</h1>
-          <table>
-            <tbody>
-              <tr>
-                <th>Amount:</th>
-                <td>$${this.amount}</td>
-              </tr>
-              <tr>
-                <th>Duration:</th>
-                <td>${this.durationInYears} years</td>
-              </tr>
-              <tr>
-                <th>APR:</th>
-                <td>${Loan.APR * 100}%</td>
-              </tr>
-              <tr>
-                <th>Monthly payment:</th>
-                <td>$${this.monthlyPayment.toFixed(2)}</td>
-              </tr>
-            </tbody>
-          </table>
-        </article>
+        ${this.generateContent()}
       </body>
     </html>`;
+    return RESPONSE;
+  }
+
+  // eslint-disable-next-line max-lines-per-function
+  generateContent() {
+    const CONTENT = `
+      <article>
+      <h1>Your personalized loan:</h1>
+      <table>
+        <tbody>
+          <tr>
+            <th>Amount:</th>
+            <td>$${this.amount}</td>
+          </tr>
+          <tr>
+            <th>Duration:</th>
+            <td>${this.durationInYears} years</td>
+          </tr>
+          <tr>
+            <th>APR:</th>
+            <td>${Loan.APR * 100}%</td>
+          </tr>
+          <tr>
+            <th>Monthly payment:</th>
+            <td>$${this.monthlyPayment.toFixed(2)}</td>
+          </tr>
+        </tbody>
+      </table>
+    </article>`;
     return CONTENT;
+  }
+
+  // eslint-disable-next-line max-lines-per-function
+  generateStyle() {
+    const STYLE = `
+      body {
+        background: rgba(250, 250, 250);
+        font-family: sans-serif;
+        color: rgb(50, 50, 50);
+      }
+
+      article {
+        width: 100%;
+        max-width: 40rem;
+        margin: 0 auto;
+        padding: 1rem 2rem;
+      }
+
+      h1 {
+        font-size: 2.5rem;
+        text-align: center;
+      }
+
+      table {
+        font-size: 2rem;
+      }
+
+      th {
+        text-align: right;
+      }`;
+    return STYLE;
   }
 }
 
