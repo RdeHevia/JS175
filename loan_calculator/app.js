@@ -90,19 +90,31 @@ class Loan {
         <tbody>
           <tr>
             <th>Amount:</th>
+            <td>
+              <a href=${this.updateQuery(-100,0)}>- $100</a>
+            </td>
             <td>$${this.amount}</td>
+            <td>
+              <a href=${this.updateQuery(100,0)}>+ $100</a>
+            </td>
           </tr>
           <tr>
             <th>Duration:</th>
+            <td>
+              <a href=${this.updateQuery(0,-1)}>- 1 year</a>
+            </td>
             <td>${this.durationInYears} years</td>
+            <td>
+              <a href=${this.updateQuery(0,+1)}>+ 1 year</a>
+            </td>
           </tr>
           <tr>
             <th>APR:</th>
-            <td>${Loan.APR * 100}%</td>
+            <td colspan="3">${Loan.APR * 100}%</td>
           </tr>
           <tr>
             <th>Monthly payment:</th>
-            <td>$${this.monthlyPayment.toFixed(2)}</td>
+            <td colspan="3">$${this.monthlyPayment.toFixed(2)}</td>
           </tr>
         </tbody>
       </table>
@@ -132,13 +144,26 @@ class Loan {
       }
 
       table {
-        font-size: 2rem;
+        font-size: 1.5rem;
       }
-
       th {
         text-align: right;
+      }
+      td {
+        text-align: center;
+      }
+      th,
+      td {
+        padding: 0.5rem;
       }`;
     return STYLE;
+  }
+
+  updateQuery(amountIncrement, durationIncrementInYears) {
+    let updatedAmount = this.amount + amountIncrement;
+    let updatedDurationInYears =
+      this.durationInYears + durationIncrementInYears;
+    return `/?amount=${updatedAmount}&duration=${updatedDurationInYears}`;
   }
 }
 
