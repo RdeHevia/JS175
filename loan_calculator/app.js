@@ -62,13 +62,42 @@ class Loan {
     );
   }
 
+  // eslint-disable-next-line max-lines-per-function
   generateOffer() {
-    let body = '';
-    body += `Amount: $${this.amount}\n`;
-    body += `Duration: ${this.durationInYears} years\n`;
-    body += `APR: ${Loan.APR * 100}%\n`;
-    body += `Monthly payment: $${this.monthlyPayment.toFixed(2)}\n`;
-    return body;
+    const CONTENT = `
+    <!DOCTYPE html>
+    <html lang="en">
+      <head>
+        <meta charset="utf-8">
+        <title>Loan Calculator</title>
+      </head>
+      <body>
+        <article>
+          <h1>Your personalized loan:</h1>
+          <table>
+            <tbody>
+              <tr>
+                <th>Amount:</th>
+                <td>$${this.amount}</td>
+              </tr>
+              <tr>
+                <th>Duration:</th>
+                <td>${this.durationInYears} years</td>
+              </tr>
+              <tr>
+                <th>APR:</th>
+                <td>${Loan.APR * 100}%</td>
+              </tr>
+              <tr>
+                <th>Monthly payment:</th>
+                <td>$${this.monthlyPayment.toFixed(2)}</td>
+              </tr>
+            </tbody>
+          </table>
+        </article>
+      </body>
+    </html>`;
+    return CONTENT;
   }
 }
 
@@ -79,7 +108,7 @@ const SERVER = HTTP.createServer((req,res) => {
     res.end();
   } else {
     res.statusCode = 200;
-    res.setHeader('Content-Type','text/plain');
+    res.setHeader('Content-Type','text/html');
     let content = (new Loan(path)).generateOffer();
     res.write(content);
     res.end();
