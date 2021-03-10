@@ -1,4 +1,4 @@
-// @ts-check
+
 /*
 APR=5%
 INPUT:
@@ -28,103 +28,16 @@ ALGORITHM:
 
 const HTTP = require('http');
 const URL = require('url').URL;
+const HANDLEBARS = require('handlebars');
 const PORT = 3000;
 
-class Loan {
-  static APR = 0.05;
-
-  constructor (path) {
-    this.path = path;
-    this.parseAmountAndDurationFromPath();
-    this.calculateMonthlyPayment();
-  }
-
-  parseAmountAndDurationFromPath() {
-    this.amount = Number(this.parseFromPath('amount'));
-    this.durationInYears = Number(this.parseFromPath('duration'));
-  }
-
-  parseFromPath(name) {
-    let url = new URL (this.path, `http://localhost:${PORT}`);
-    return url.searchParams.get(name);
-  }
-
-  calculateMonthlyPayment() {
-    const MONTHS_IN_A_YEAR = 12;
-
-    let monthlyInterest = Loan.APR / MONTHS_IN_A_YEAR;
-    let amount = this.amount;
-    let durationInMonths = this.durationInYears * MONTHS_IN_A_YEAR;
-
-    this.monthlyPayment = (
-      amount *
-      (monthlyInterest / (1 - ((1 + monthlyInterest) ** (-durationInMonths))))
-    );
-  }
-
-  // eslint-disable-next-line max-lines-per-function
-  generateOffer() {
-    const RESPONSE = `
-    <!DOCTYPE html>
-    <html lang="en">
-      <head>
-        <meta charset="utf-8">
-        <title>Loan Calculator</title>
-        <style type="text/css">
-          ${this.generateStyle()}
-        </style>
-      </head>
-      <body>
-        ${this.generateContent()}
-      </body>
-    </html>`;
-    return RESPONSE;
-  }
-
-  // eslint-disable-next-line max-lines-per-function
-  generateContent() {
-    const CONTENT = `
-      <article>
-      <h1>Your personalized loan:</h1>
-      <table>
-        <tbody>
-          <tr>
-            <th>Amount:</th>
-            <td>
-              <a href=${this.updateQuery(-100,0)}>- $100</a>
-            </td>
-            <td>$${this.amount}</td>
-            <td>
-              <a href=${this.updateQuery(100,0)}>+ $100</a>
-            </td>
-          </tr>
-          <tr>
-            <th>Duration:</th>
-            <td>
-              <a href=${this.updateQuery(0,-1)}>- 1 year</a>
-            </td>
-            <td>${this.durationInYears} years</td>
-            <td>
-              <a href=${this.updateQuery(0,+1)}>+ 1 year</a>
-            </td>
-          </tr>
-          <tr>
-            <th>APR:</th>
-            <td colspan="3">${Loan.APR * 100}%</td>
-          </tr>
-          <tr>
-            <th>Monthly payment:</th>
-            <td colspan="3">$${this.monthlyPayment.toFixed(2)}</td>
-          </tr>
-        </tbody>
-      </table>
-    </article>`;
-    return CONTENT;
-  }
-
-  // eslint-disable-next-line max-lines-per-function
-  generateStyle() {
-    const STYLE = `
+const SOURCE = `
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Loan Calculator</title>
+    <style type="text/css">
       body {
         background: rgba(250, 250, 250);
         font-family: sans-serif;
@@ -155,15 +68,97 @@ class Loan {
       th,
       td {
         padding: 0.5rem;
-      }`;
-    return STYLE;
+      }
+    </style>
+  </head>
+  <body>
+    <article>
+      <h1>Loan Calculator</h1>
+      <table>
+        <tbody>
+          <tr>
+            <th>Amount:</th>
+            <td>
+              <a href='/?amount={{amountDecrement}}&duration={{durationInYears}}'>- $100</a>
+            </td>
+            <td>$ {{amount}}</td>
+            <td>
+              <a href='/?amount={{amountIncrement}}&duration={{durationInYears}}'>+ $100</a>
+            </td>
+          </tr>
+          <tr>
+            <th>Duration:</th>
+            <td>
+              <a href='/?amount={{amount}}&duration={{durationDecrement}}'>- 1 year</a>
+            </td>
+            <td>{{durationInYears}} years</td>
+            <td>
+              <a href='/?amount={{amount}}&duration={{durationIncrement}}'>+ 1 year</a>
+            </td>
+          </tr>
+          <tr>
+            <th>APR:</th>
+            <td colspan='3'>{{apr}}%</td>
+          </tr>
+          <tr>
+            <th>Monthly payment:</th>
+            <td colspan='3'>$ {{monthlyPayment}}</td>
+          </tr>
+        </tbody>
+      </table>
+    </article>
+  </body>
+</html>
+`;
+
+const LOAN_OFFER_TEMPLATE = HANDLEBARS.compile(SOURCE);
+
+function render(template, data) {
+  let html = template(data);
+  return html;
+}
+
+class Loan {
+  static APR = 0.05;
+
+  constructor (path) {
+    this.path = path;
+    this.parseAmountAndDurationFromPath();
+    this.calculateMonthlyPayment();
   }
 
-  updateQuery(amountIncrement, durationIncrementInYears) {
-    let updatedAmount = this.amount + amountIncrement;
-    let updatedDurationInYears =
-      this.durationInYears + durationIncrementInYears;
-    return `/?amount=${updatedAmount}&duration=${updatedDurationInYears}`;
+  parseAmountAndDurationFromPath() {
+    this.amount = Number(this.parseFromPath('amount'));
+    this.durationInYears = Number(this.parseFromPath('duration'));
+  }
+
+  parseFromPath(name) {
+    let url = new URL (this.path, `http://localhost:${PORT}`);
+    return url.searchParams.get(name);
+  }
+
+  calculateMonthlyPayment() {
+    const MONTHS_IN_A_YEAR = 12;
+
+    let monthlyInterest = Loan.APR / MONTHS_IN_A_YEAR;
+    let amount = this.amount;
+    let durationInMonths = this.durationInYears * MONTHS_IN_A_YEAR;
+
+    this.monthlyPayment = (
+      amount *
+      (monthlyInterest / (1 - ((1 + monthlyInterest) ** (-durationInMonths))))
+    ).toFixed(2);
+  }
+
+  getOfferData() {
+    let offerData = Object.assign({},this);
+    offerData.amountIncrement = offerData.amount + 100;
+    offerData.amountDecrement = offerData.amount - 100;
+    offerData.durationIncrement = offerData.durationInYears + 1;
+    offerData.durationDecrement = offerData.durationInYears - 1;
+    offerData.apr = Loan.APR * 100;
+
+    return offerData;
   }
 }
 
@@ -175,7 +170,8 @@ const SERVER = HTTP.createServer((req,res) => {
   } else {
     res.statusCode = 200;
     res.setHeader('Content-Type','text/html');
-    let content = (new Loan(path)).generateOffer();
+    let data = (new Loan(path)).getOfferData();
+    let content = render(LOAN_OFFER_TEMPLATE, data);
     res.write(content);
     res.end();
   }
