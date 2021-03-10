@@ -31,7 +31,16 @@ ALGORITHM:
 const HTTP = require('http');
 const URL = require('url').URL;
 const HANDLEBARS = require('handlebars');
+const PATH = require('path');
+const FS = require('fs');
 const PORT = 3000;
+const MIME_TYPES = {
+  '.css': 'text/css',
+  '.js': 'application/javascript',
+  '.jpg': 'image/jpeg',
+  '.png': 'image/png',
+  '.ico': 'image/x-icon'
+};
 
 const LOAN_OFFER_SOURCE = `
 <!DOCTYPE html>
@@ -39,39 +48,7 @@ const LOAN_OFFER_SOURCE = `
   <head>
     <meta charset="utf-8">
     <title>Loan Calculator</title>
-    <style type="text/css">
-      body {
-        background: rgba(250, 250, 250);
-        font-family: sans-serif;
-        color: rgb(50, 50, 50);
-      }
-
-      article {
-        width: 100%;
-        max-width: 40rem;
-        margin: 0 auto;
-        padding: 1rem 2rem;
-      }
-
-      h1 {
-        font-size: 2.5rem;
-        text-align: center;
-      }
-
-      table {
-        font-size: 1.5rem;
-      }
-      th {
-        text-align: right;
-      }
-      td {
-        text-align: center;
-      }
-      th,
-      td {
-        padding: 0.5rem;
-      }
-    </style>
+    <link rel="stylesheet" href="/assets/css/styles.css">
   </head>
   <body>
     <article>
@@ -119,49 +96,7 @@ const LOAN_FORM_SOURCE = `
   <head>
     <meta charset="utf-8">
     <title>Loan Calculator</title>
-    <style type="text/css">
-      body {
-        background: rgba(250, 250, 250);
-        font-family: sans-serif;
-        color: rgb(50, 50, 50);
-      }
-
-      article {
-        width: 100%;
-        max-width: 40rem;
-        margin: 0 auto;
-        padding: 1rem 2rem;
-      }
-
-      h1 {
-        font-size: 2.5rem;
-        text-align: center;
-      }
-
-      form,
-      input {
-        font-size: 1.5rem;
-      }
-      form p {
-        text-align: center;
-      }
-      label,
-      input {
-        display: block;
-        width: 100%;
-        padding: 0.5rem;
-        margin-top: 0.5rem;
-      }
-      input[type="submit"] {
-        width: auto;
-        margin: 1rem auto;
-        cursor: pointer;
-        color: #fff;
-        background-color: #01d28e;
-        border: none;
-        border-radius: 0.3rem;
-      }
-    </style>
+    <link rel="stylesheet" href="/assets/css/styles.css">
   </head>
   <body>
     <article>
@@ -241,26 +176,53 @@ class Loan {
 const SERVER = HTTP.createServer((req,res) => {
   let path = req.url;
   let pathName = parsePathName(path);
-  // delete console.logs
-  console.log(path);
-  console.log(pathName);
-  if (pathName === '/') {
-    res.statusCode = 200;
-    res.setHeader('Content-Type','text/html');
-    let content = render(LOAN_FORM_TEMPLATE,{apr: 5});
-    res.write(content);
-    res.end();
-  } else if (pathName === '/loan-offer') {
-    res.statusCode = 200;
-    res.setHeader('Content-Type','text/html');
-    let data = (new Loan(path)).getOfferData();
-    let content = render(LOAN_OFFER_TEMPLATE, data);
-    res.write(content);
-    res.end();
-  } else {
-    res.statusCode = 404;
-    res.end();
-  }
+  let fileExtension = PATH.extname(pathName);
+  // DELETE console.logs
+  console.log(`path: ${path}`);
+  console.log(`pathname: ${pathName}`);
+  console.log(`fileExtension: ${fileExtension}`);
+
+  FS.readFile(`./public/${pathName}`, (err, data) => {
+    if (data) {
+      res.statusCode = 200;
+      res.setHeader('Content-Type', `${MIME_TYPES[fileExtension]}`);
+      res.write(`${data}\n`);
+      res.end();
+    } else if (pathName === '/') {
+      res.statusCode = 200;
+      res.setHeader('Content-Type','text/html');
+      let content = render(LOAN_FORM_TEMPLATE,{apr: 5});
+      res.write(content);
+      res.end();
+    } else if (pathName === '/loan-offer') {
+      res.statusCode = 200;
+      res.setHeader('Content-Type','text/html');
+      let data = (new Loan(path)).getOfferData();
+      let content = render(LOAN_OFFER_TEMPLATE, data);
+      res.write(content);
+      res.end();
+    } else {
+      res.statusCode = 404;
+      res.end();
+    }
+  });
+  // if (pathName === '/') {
+  //   res.statusCode = 200;
+  //   res.setHeader('Content-Type','text/html');
+  //   let content = render(LOAN_FORM_TEMPLATE,{apr: 5});
+  //   res.write(content);
+  //   res.end();
+  // } else if (pathName === '/loan-offer') {
+  //   res.statusCode = 200;
+  //   res.setHeader('Content-Type','text/html');
+  //   let data = (new Loan(path)).getOfferData();
+  //   let content = render(LOAN_OFFER_TEMPLATE, data);
+  //   res.write(content);
+  //   res.end();
+  // } else {
+  //   res.statusCode = 404;
+  //   res.end();
+  // }
 });
 
 SERVER.listen(PORT, () => {
