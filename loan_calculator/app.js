@@ -1,3 +1,5 @@
+/* eslint-disable max-statements */
+/* eslint-disable max-lines-per-function */
 
 /*
 APR=5%
@@ -31,7 +33,7 @@ const URL = require('url').URL;
 const HANDLEBARS = require('handlebars');
 const PORT = 3000;
 
-const SOURCE = `
+const LOAN_OFFER_SOURCE = `
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -79,21 +81,21 @@ const SOURCE = `
           <tr>
             <th>Amount:</th>
             <td>
-              <a href='/?amount={{amountDecrement}}&duration={{durationInYears}}'>- $100</a>
+              <a href='/loan-offer?amount={{amountDecrement}}&duration={{durationInYears}}'>- $100</a>
             </td>
             <td>$ {{amount}}</td>
             <td>
-              <a href='/?amount={{amountIncrement}}&duration={{durationInYears}}'>+ $100</a>
+              <a href='/loan-offer?amount={{amountIncrement}}&duration={{durationInYears}}'>+ $100</a>
             </td>
           </tr>
           <tr>
             <th>Duration:</th>
             <td>
-              <a href='/?amount={{amount}}&duration={{durationDecrement}}'>- 1 year</a>
+              <a href='/loan-offer?amount={{amount}}&duration={{durationDecrement}}'>- 1 year</a>
             </td>
             <td>{{durationInYears}} years</td>
             <td>
-              <a href='/?amount={{amount}}&duration={{durationIncrement}}'>+ 1 year</a>
+              <a href='/loan-offer?amount={{amount}}&duration={{durationIncrement}}'>+ 1 year</a>
             </td>
           </tr>
           <tr>
@@ -111,11 +113,85 @@ const SOURCE = `
 </html>
 `;
 
-const LOAN_OFFER_TEMPLATE = HANDLEBARS.compile(SOURCE);
+const LOAN_FORM_SOURCE = `
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Loan Calculator</title>
+    <style type="text/css">
+      body {
+        background: rgba(250, 250, 250);
+        font-family: sans-serif;
+        color: rgb(50, 50, 50);
+      }
+
+      article {
+        width: 100%;
+        max-width: 40rem;
+        margin: 0 auto;
+        padding: 1rem 2rem;
+      }
+
+      h1 {
+        font-size: 2.5rem;
+        text-align: center;
+      }
+
+      form,
+      input {
+        font-size: 1.5rem;
+      }
+      form p {
+        text-align: center;
+      }
+      label,
+      input {
+        display: block;
+        width: 100%;
+        padding: 0.5rem;
+        margin-top: 0.5rem;
+      }
+      input[type="submit"] {
+        width: auto;
+        margin: 1rem auto;
+        cursor: pointer;
+        color: #fff;
+        background-color: #01d28e;
+        border: none;
+        border-radius: 0.3rem;
+      }
+    </style>
+  </head>
+  <body>
+    <article>
+      <h1>Loan Calculator</h1>
+      <form action="/loan-offer" method="GET">
+        <p>All loans are offered at an APR of {{apr}}%</p>
+        <label for="amout">How much money ($) do you want to borrow?</label>
+        <input type="number" name="amount" value="">
+        
+        <label for="duration">How many years do you want to pay back your loan?</label>
+        <input type="number" name="duration" value="">
+        <input type="submit" name="" value="Get loan offer!">
+      </form>
+    </article>
+  </body>
+</html>
+`;
+
+const LOAN_OFFER_TEMPLATE = HANDLEBARS.compile(LOAN_OFFER_SOURCE);
+const LOAN_FORM_TEMPLATE = HANDLEBARS.compile(LOAN_FORM_SOURCE);
 
 function render(template, data) {
   let html = template(data);
   return html;
+}
+// Refactor parsePathName and Loan.prototype.parseFromPath into a class
+
+function parsePathName(path) {
+  let url = new URL(path, `http://localhost:${PORT}`);
+  return url.pathname;
 }
 
 class Loan {
@@ -164,15 +240,25 @@ class Loan {
 
 const SERVER = HTTP.createServer((req,res) => {
   let path = req.url;
-  if (path === '/favicon.ico') {
-    res.statusCode = 404;
+  let pathName = parsePathName(path);
+  // delete console.logs
+  console.log(path);
+  console.log(pathName);
+  if (pathName === '/') {
+    res.statusCode = 200;
+    res.setHeader('Content-Type','text/html');
+    let content = render(LOAN_FORM_TEMPLATE,{apr: 5});
+    res.write(content);
     res.end();
-  } else {
+  } else if (pathName === '/loan-offer') {
     res.statusCode = 200;
     res.setHeader('Content-Type','text/html');
     let data = (new Loan(path)).getOfferData();
     let content = render(LOAN_OFFER_TEMPLATE, data);
     res.write(content);
+    res.end();
+  } else {
+    res.statusCode = 404;
     res.end();
   }
 });
@@ -180,3 +266,4 @@ const SERVER = HTTP.createServer((req,res) => {
 SERVER.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}...`);
 });
+
