@@ -155,6 +155,7 @@ function parseFormData(request, callback) {
   });
 }
 
+
 // class Parser {
 //   constructor (path) {
 //     this.path = path;
@@ -199,6 +200,37 @@ class Loan {
   }
 }
 
+function getMainPage(res) {
+  res.statusCode = 200;
+  res.setHeader('Content-Type','text/html');
+
+  let content = render(LOAN_FORM_TEMPLATE,{apr: 5});
+  res.write(content);
+  res.end();
+}
+
+function getLoanOffer(res, path) {
+  res.statusCode = 200;
+  res.setHeader('Content-Type','text/html');
+
+  let data = (new Loan(getParams(path))).getOfferData();
+  let content = render(LOAN_OFFER_TEMPLATE, data);
+  res.write(content);
+  res.end();
+}
+
+function postLoanOffer(req, res) {
+  parseFormData(req, parsedData => {
+    let data = (new Loan(parsedData)).getOfferData();
+    let content = render(LOAN_OFFER_TEMPLATE, data);
+
+    res.statusCode = 200;
+    res.setHeader('Content-Type', 'text/html');
+    res.write(`${content}\n`);
+    res.end();
+  });
+}
+
 const SERVER = HTTP.createServer((req,res) => {
   let method = req.method;
   let path = req.url;
@@ -217,52 +249,16 @@ const SERVER = HTTP.createServer((req,res) => {
       res.write(`${data}\n`);
       res.end();
     } else if (method === 'GET' && pathName === '/') {
-      res.statusCode = 200;
-      res.setHeader('Content-Type','text/html');
-
-      let content = render(LOAN_FORM_TEMPLATE,{apr: 5});
-      res.write(content);
-      res.end();
+      getMainPage(res);
     } else if (method === 'GET' && pathName === '/loan-offer') {
-      res.statusCode = 200;
-      res.setHeader('Content-Type','text/html');
-
-      let data = (new Loan(getParams(path))).getOfferData();
-      let content = render(LOAN_OFFER_TEMPLATE, data);
-      res.write(content);
-      res.end();
+      getLoanOffer(res,path);
     } else if (method === 'POST' && pathName === '/loan-offer') {
-      parseFormData(req, parsedData => {
-        let data = (new Loan(parsedData)).getOfferData();
-        let content = render(LOAN_OFFER_TEMPLATE, data);
-
-        res.statusCode = 200;
-        res.setHeader('Content-Type', 'text/html');
-        res.write(`${content}\n`);
-        res.end();
-      });
+      postLoanOffer(req, res);
     } else {
       res.statusCode = 404;
       res.end();
     }
   });
-  // if (pathName === '/') {
-  //   res.statusCode = 200;
-  //   res.setHeader('Content-Type','text/html');
-  //   let content = render(LOAN_FORM_TEMPLATE,{apr: 5});
-  //   res.write(content);
-  //   res.end();
-  // } else if (pathName === '/loan-offer') {
-  //   res.statusCode = 200;
-  //   res.setHeader('Content-Type','text/html');
-  //   let data = (new Loan(path)).getOfferData();
-  //   let content = render(LOAN_OFFER_TEMPLATE, data);
-  //   res.write(content);
-  //   res.end();
-  // } else {
-  //   res.statusCode = 404;
-  //   res.end();
-  // }
 });
 
 SERVER.listen(PORT, () => {
