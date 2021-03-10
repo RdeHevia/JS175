@@ -30,6 +30,7 @@ ALGORITHM:
 
 const HTTP = require('http');
 const URL = require('url').URL;
+const QUERYSTRING = require('querystring');
 const HANDLEBARS = require('handlebars');
 const PATH = require('path');
 const FS = require('fs');
@@ -58,11 +59,11 @@ const LOAN_OFFER_SOURCE = `
           <tr>
             <th>Amount:</th>
             <td>
-              <a href='/loan-offer?amount={{amountDecrement}}&duration={{durationInYears}}'>- $100</a>
+              <a href='/loan-offer?amount={{amountDecrement}}&duration={{duration}}'>- $100</a>
             </td>
             <td>$ {{amount}}</td>
             <td>
-              <a href='/loan-offer?amount={{amountIncrement}}&duration={{durationInYears}}'>+ $100</a>
+              <a href='/loan-offer?amount={{amountIncrement}}&duration={{duration}}'>+ $100</a>
             </td>
           </tr>
           <tr>
@@ -70,7 +71,7 @@ const LOAN_OFFER_SOURCE = `
             <td>
               <a href='/loan-offer?amount={{amount}}&duration={{durationDecrement}}'>- 1 year</a>
             </td>
-            <td>{{durationInYears}} years</td>
+            <td>{{duration}} years</td>
             <td>
               <a href='/loan-offer?amount={{amount}}&duration={{durationIncrement}}'>+ 1 year</a>
             </td>
@@ -101,7 +102,7 @@ const LOAN_FORM_SOURCE = `
   <body>
     <article>
       <h1>Loan Calculator</h1>
-      <form action="/loan-offer" method="GET">
+      <form action="/loan-offer" method="POST">
         <p>All loans are offered at an APR of {{apr}}%</p>
         <label for="amout">How much money ($) do you want to borrow?</label>
         <input type="number" name="amount" value="">
@@ -129,23 +130,48 @@ function parsePathName(path) {
   return url.pathname;
 }
 
+function getParams(path) {
+  let data = {};
+  data.amount = Number(parseFromPath(path, 'amount'));
+  data.duration = Number(parseFromPath(path, 'duration'));
+  return data;
+}
+
+function parseFromPath(path, name) {
+  let url = new URL (path, `http://localhost:${PORT}`);
+  return url.searchParams.get(name);
+}
+
+function parseFormData(request, callback) {
+  let body = '';
+  request.on('data', chunk => {
+    body += chunk.toString();
+  });
+  request.on('end',() => {
+    let data = QUERYSTRING.parse(body);
+    data.amount = Number(data.amount);
+    data.duration = Number(data.duration);
+    callback(data);
+  });
+}
+
+// class Parser {
+//   constructor (path) {
+//     this.path = path;
+//   }
+//   pathName() {}
+//   getParams() {}
+//   fromPath(name) {}
+//   formData(request, callbac) {}
+// }
+
 class Loan {
   static APR = 0.05;
 
-  constructor (path) {
-    this.path = path;
-    this.parseAmountAndDurationFromPath();
+  constructor (data) {
+    this.amount = data.amount;
+    this.duration = data.duration;
     this.calculateMonthlyPayment();
-  }
-
-  parseAmountAndDurationFromPath() {
-    this.amount = Number(this.parseFromPath('amount'));
-    this.durationInYears = Number(this.parseFromPath('duration'));
-  }
-
-  parseFromPath(name) {
-    let url = new URL (this.path, `http://localhost:${PORT}`);
-    return url.searchParams.get(name);
   }
 
   calculateMonthlyPayment() {
@@ -153,7 +179,7 @@ class Loan {
 
     let monthlyInterest = Loan.APR / MONTHS_IN_A_YEAR;
     let amount = this.amount;
-    let durationInMonths = this.durationInYears * MONTHS_IN_A_YEAR;
+    let durationInMonths = this.duration * MONTHS_IN_A_YEAR;
 
     this.monthlyPayment = (
       amount *
@@ -165,8 +191,8 @@ class Loan {
     let offerData = Object.assign({},this);
     offerData.amountIncrement = offerData.amount + 100;
     offerData.amountDecrement = offerData.amount - 100;
-    offerData.durationIncrement = offerData.durationInYears + 1;
-    offerData.durationDecrement = offerData.durationInYears - 1;
+    offerData.durationIncrement = offerData.duration + 1;
+    offerData.durationDecrement = offerData.duration - 1;
     offerData.apr = Loan.APR * 100;
 
     return offerData;
@@ -174,6 +200,7 @@ class Loan {
 }
 
 const SERVER = HTTP.createServer((req,res) => {
+  let method = req.method;
   let path = req.url;
   let pathName = parsePathName(path);
   let fileExtension = PATH.extname(pathName);
@@ -186,21 +213,34 @@ const SERVER = HTTP.createServer((req,res) => {
     if (data) {
       res.statusCode = 200;
       res.setHeader('Content-Type', `${MIME_TYPES[fileExtension]}`);
+
       res.write(`${data}\n`);
       res.end();
-    } else if (pathName === '/') {
+    } else if (method === 'GET' && pathName === '/') {
       res.statusCode = 200;
       res.setHeader('Content-Type','text/html');
+
       let content = render(LOAN_FORM_TEMPLATE,{apr: 5});
       res.write(content);
       res.end();
-    } else if (pathName === '/loan-offer') {
+    } else if (method === 'GET' && pathName === '/loan-offer') {
       res.statusCode = 200;
       res.setHeader('Content-Type','text/html');
-      let data = (new Loan(path)).getOfferData();
+
+      let data = (new Loan(getParams(path))).getOfferData();
       let content = render(LOAN_OFFER_TEMPLATE, data);
       res.write(content);
       res.end();
+    } else if (method === 'POST' && pathName === '/loan-offer') {
+      parseFormData(req, parsedData => {
+        let data = (new Loan(parsedData)).getOfferData();
+        let content = render(LOAN_OFFER_TEMPLATE, data);
+
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'text/html');
+        res.write(`${content}\n`);
+        res.end();
+      });
     } else {
       res.statusCode = 404;
       res.end();
