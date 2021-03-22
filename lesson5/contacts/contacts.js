@@ -23,7 +23,7 @@ let contactData = [
     lastName: "Keys",
     phoneNumber: "515-489-4608",
   },
-];
+]
 
 const sortContacts = contacts => {
   return contacts.slice().sort((contactA, contactB) => {
@@ -39,16 +39,16 @@ const sortContacts = contacts => {
       return 0;
     }
   });
-};
+}
 
 app.set("views", "./views");
 app.set("view engine", "pug");
 
 app.use(express.static("public"));
-app.use(express.urlencoded({extend: false}));
+app.use(express.urlencoded({extended: false}));
 app.use(morgan("common"));
 
-app.get("/", (req, res) => {
+app.get("/", (req, res)=> {
   res.redirect("/contacts");
 });
 
@@ -62,10 +62,10 @@ app.get("/contacts/new", (req, res) => {
   res.render("new-contact");
 });
 
-app.post("/contacts/new", (req,res) => {
+app.post("/contacts/new", (req, res) => {
   contactData.push({...req.body});
 
-  res.redirect('/contacts');
+  res.redirect("/contacts");
 });
 
 app.listen(3000, "localhost", () => {

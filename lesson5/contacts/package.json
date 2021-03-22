@@ -4,10 +4,10 @@
   "description": "",
   "main": "contacts.js",
   "scripts": {
-    "start": "npx nodemon contact.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "npx nodemon contacts.js"
   },
-  "author": "RdH",
+  "author": "",
   "license": "ISC",
   "dependencies": {
     "express": "^4.17.1",
