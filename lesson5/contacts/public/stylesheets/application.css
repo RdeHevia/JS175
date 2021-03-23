@@ -125,4 +125,22 @@ button.cancel:hover {
   cursor: pointer;
 }
 
-/* .flash */
+.flash {
+  font-size: 1.25rem;
+  font-weight: bold;
+  list-style-position: inside;
+  margin: 0 2rem;
+  max-width: 100%;
+}
+
+.flash li {
+  margin: 0.5rem auto;
+  padding: 0.5rem 2rem;
+}
+
+.error {
+  background-color: #ffcfbf;
+  color: #ff6633;
+}
+
+/* .success */
