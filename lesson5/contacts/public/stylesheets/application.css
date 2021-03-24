@@ -143,4 +143,12 @@ button.cancel:hover {
   color: #ff6633;
 }
 
-/* .success */
+.success {
+  background-color: #a0f0a0;
+  color: #33cc99;
+}
+
+.info {
+  background-color: #cbe5f2;
+  color: #3399cc;
+}
