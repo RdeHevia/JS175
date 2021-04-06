@@ -111,6 +111,13 @@ class TodoList {
     }
   }
 
+  markUndone(title) {
+    let todo = this.findByTitle(title);
+    if (todo !== undefined) {
+      todo.markUndone();
+    }
+  }
+
   markAllDone() {
     this.forEach(todo => todo.markDone());
   }
@@ -131,6 +138,36 @@ class TodoList {
     if (!(index in this.todos)) {
       throw new ReferenceError(`invalid index: ${index}`);
     }
+  }
+
+  markDoneById(id) {
+    let todo = this.findById(id);
+    if (todo !== undefined) {
+      todo.markDone();
+    }
+  }
+
+  markUndoneById(id) {
+    let todo = this.findById(id);
+    if (todo !== undefined) {
+      todo.markUndone();
+    }
+  }
+
+  toogleById(id) {
+    let todo = this.findById(id);
+    if (todo !== undefined) {
+      if (todo.isDone()) {
+        todo.markUndone();
+      } else {
+        todo.markDone();
+      }
+    }
+  }
+
+  removeById(id) {
+    let todo = this.findById(id);
+    this.removeAt(this.findIndexOf(todo));
   }
 }
 
