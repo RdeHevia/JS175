@@ -41,3 +41,23 @@ Most of these actions occur automatically without any additional code. Once you 
 As with Problem 1, make sure your code issues a 404 status code if either the requested todo list or the specified todo does not exist.
 
 You should also issue a flash success message after deleting a todo.
+
+
+-----------
+
+Practice Problem: Create a New Todo
+
+For this problem, the text input field at the bottom of the page provides an area where the user can enter the title of a new todo item. The todo gets created and then added to the current todo list when you submit the form. Your program should exhibit the following behaviors:
+
+When you submit the form, the screen should automatically redraw itself.
+If you enter a valid title for the new todo, the new todo should appear in the list of todos, sorted appropriately. The new todo should not be marked as done.
+The todo title is required; issue an appropriate flash error message if the title is unspecified.
+The todo title has a maximum size of 100 characters; display an appropriate flash error when the title is too long. Make sure the invalid title doesn't disappear when the page is redrawn.
+Duplicate todo titles are allowed.
+In the list of todo lists at http://localhost:3000/lists, the modified todo list should show the new counts.
+At all times, the todos should be sorted alphabetically with done todos at the bottom of the list.
+Most of these actions occur automatically without any additional code. Once you hook up the form to respond to a submission, create a new todo, and add it to the todo list, the Pug view and CSS should handle the remaining behaviors.
+
+You should also issue a flash success message after creating a new todo.
+
+Make sure your code issues a 404 status code if the requested todo list does not exist.
