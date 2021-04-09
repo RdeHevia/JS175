@@ -1,0 +1,59 @@
+* {
+  margin: 0;
+  padding: 0;
+}
+
+header {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin: 30px 0;
+}
+main {
+  display: grid;
+  width: 70%;
+  height: 600px;
+  margin: 0 auto;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 30px;
+  grid-template-areas:
+    "month-year expenses"
+    "total categories"
+}
+
+.tile {
+  border-radius: 15px;
+  /* aspect-ratio: 1 / 1; */
+}
+
+#month-year {
+  grid-area: month-year;
+  background-color: yellowgreen;
+}
+
+#expenses {
+  grid-area: expenses;
+  background-color: rgb(211, 81, 228);
+}
+
+#total {
+  grid-area: total;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: center;
+  list-style-type: none;
+  background-color: lightseagreen;
+}
+
+#categories {
+  grid-area: categories;
+  background-color: tomato;
+}
+
+#categories dl {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 10%;
+}
