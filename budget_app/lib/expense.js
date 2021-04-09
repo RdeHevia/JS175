@@ -1,8 +1,8 @@
 const nextId = require('./next-id');
-
-const VALID_CATEGORIES = [
-  "Groceries", "Restaurants", "Leisure", "Rent", "Bills", "Health"
-];
+const VALID_CATEGORIES = require('./categories').names;
+// const VALID_CATEGORIES = [
+//   "Groceries", "Restaurants", "Leisure", "Rent", "Bills", "Health"
+// ];
 
 class Expense {
   static validCategories = VALID_CATEGORIES;
@@ -54,11 +54,11 @@ class Expense {
 }
 
 
-let expense1 = new Expense("2021-03-06","Spanish Table", "groceries", 30);
-let expense2 = new Expense("2021-03","Spanish Table", "groceries", 30);
+// let expense1 = new Expense("2021-03-06","Spanish Table", "groceries", 30);
+// let expense2 = new Expense("2021-03","Spanish Table", "groceries", 30);
 // console.log(expense1.getId());
 // console.log(expense2.getId());
-console.log(expense1);
+// console.log(expense1);
 // expense1.updateAmount(100);
 // expense1.updateCategory("health");
 // console.log(expense1);

@@ -1,62 +1,42 @@
 extends layout 
 
 block summary
-  section#expenses.tile
-    nav
-      ul
-        li
-          a(href="#") See all expenses
-    
-    table
-      h1 Last expenses
-      thead 
-        tr 
-          th Date 
-          th Description 
-          th Category 
-          th Amount
-      tbody 
-        //- tr 
-        //-   td 2021
-        //-   td Safeway
-        //-   td Groceries
-        //-   td 200
-        each expense in expenseList
-          tr
-            td= expense.fullDate
-            td= expense.description
-            td= expense.category
-            td= `$ ${expense.amount}`
+  form#expenses.tile(action="/expenses", method="get")
+    label(for="all-expenses")      
+      table
+        h2 Expenses
+        thead 
+          tr 
+            th Date 
+            th Description 
+            th Category 
+            th Amount
+        tbody 
+          each expense in expenseList
+            tr
+              td= expense.fullDate
+              td= expense.description
+              td= expense.category
+              td= `$ ${expense.amount}`
+    input#all-expenses(type="submit", name="See all expenses")
 
-  form.tile#month-year(action="#", method="get") 
-    h1 March 2021
+  form.tile#month-year(action="/summary", method="get") 
+    h2= monthYearTitle
     dl 
       dt
         label(for="month") Month 
       dd
-        input#month(type="month", name="month" value="2021-04")
+        input#month(type="month", name="yearMonth" value=yearMonth)
 
     input(type="submit", value="Update")
   dl#total.tile
     dt Total
-    dd $100
+    dd= `$ ${total}`
 
   section#categories.tile
-    dl
-      dt Groceries 
-      dd $100
-    dl
-      dt Restaurants 
-      dd $100
-    dl
-      dt Leisure 
-      dd $100
-    dl
-      dt Rent 
-      dd $100
-    dl
-      dt Bills 
-      dd $100
-    dl
-      dt Health
-      dd $100
+    h2 Categories
+    each category in categoriesTotal 
+      dl 
+        dt= category.name 
+        dd= category.total
+
